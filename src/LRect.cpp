@@ -10,8 +10,7 @@ SDL_Color Limb::toSDLColor(const Color c)
     return {c.r, c.b, c.g, c.a};
 }
 SDL_Rect Limb::toAbsSDLRect(Rect r,Point parent){
-    Point absP = toAbsPoint({r.x, r.y},parent);
-    return {absP.x, absP.y, r.h, r.w};
+    return {r.x + parent.x, r.y + parent.y, r.h, r.w};
 }
 Point Limb::toAbsPoint(Point p, Point parent)
 {

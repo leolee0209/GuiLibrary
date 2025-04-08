@@ -1,7 +1,7 @@
 #include <LEvent.hpp>
 #include <SDL2/SDL.h>
 #include <LRect.hpp>
-
+#include <iostream>
 bool Limb::interaction(Root *root)
 {
     bool quit = false;
@@ -27,6 +27,7 @@ void Limb::clickEvent(SDL_MouseButtonEvent &e, Limb::Root *root)
 {
     if (e.button == SDL_BUTTON_LEFT)
     { // left click
+        root->updateInteractive();
         auto interactives = root->getInteractive();
         Limb::Point mouse;
         SDL_GetMouseState(&mouse.x, &mouse.y);

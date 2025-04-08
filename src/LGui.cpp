@@ -9,15 +9,19 @@
 using namespace Limb;
 using namespace std;
 
-Limb::Label::Label(Rect rect, Color background)
+Limb::Label::Label(Face f)
 {
-    this->rect = rect;
-    this->color = background;
+    this->face = f;
 }
 Limb::Button::Button(Rect range, void (*func)())
 {
     this->range = range;
     this->func = func;
+}
+
+bool Limb::Button::isInteractive()
+{
+    return ifInteractive;
 }
 
 // parentP is initialized to {0,0}, but set to parent's position if called by parent.
@@ -36,21 +40,15 @@ void Button::draw(SDL_Renderer *renderer, Point parentP)
     vector<Tree *> *seeds = getSeeds();
     for (const auto &t : *seeds)
     {
-        t->draw(renderer, parentP);
+        t->draw(renderer, toAbsPoint({this->range.x,this->range.y},parentP));
     }
 }
 
 void Label::draw(SDL_Renderer *renderer, Point parentP)
 {
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-
-    SDL_Rect absR = toAbsSDLRect(rect, parentP);
-    if (SDL_RenderFillRect(renderer, &absR))
-    {
-        ERROR("Can't fill rect. " + std::string(SDL_GetError()));
-    }
+    genericDraw(face, renderer, parentP);
     vector<Tree *> *seeds = getSeeds();
-    Point absP = {absR.x, absR.y};
+    Point absP = toAbsPoint(face.p,parentP);
 
     for (const auto &t : *seeds)
     {
@@ -63,8 +61,11 @@ void Tree::addSeed(Tree *kid)
     if (kid)
         this->seeds.push_back(kid);
 }
+
+
 void Tree::setSeeds(std::vector<Tree *> newSeeds)
 {
+
     seeds = std::vector(newSeeds);
 }
 
@@ -105,11 +106,6 @@ vector<Tree *> *Tree::getSeeds()
 Root::Root(LWindow *window)
 {
     this->renderer = window->getRenderer();
-}
-
-Tree::~Tree()
-{
-
 }
 
 Text::Text(Rect rect, std::string text, Color wordColor, TTF_Font *font)
@@ -157,5 +153,12 @@ void Limb::generateInteractive(Tree *tree, vector<Tree *> *ret)
             ret->push_back(s);
         }
         generateInteractive(s, ret);
+    }
+}
+
+void Limb::genericDraw(Face f, SDL_Renderer *r, Point parentP)
+{
+    for(const auto& s:f.shapes){
+        s->specificDraw(r, parentP);
     }
 }

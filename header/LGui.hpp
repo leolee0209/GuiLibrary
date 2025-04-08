@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <LRect.hpp>
+#include "LShape.hpp"
 #include <SDL2/SDL_ttf.h>
 #include <cstdint>
 #include <LWindow.hpp>
@@ -16,14 +17,13 @@ namespace Limb
     class Tree
     {
     public:
-        virtual void draw(SDL_Renderer *renderer, Point parentP = zero){};
-        void addSeed(Tree *);
-        std::vector<Tree *> *getSeeds();
-        void setSeeds(std::vector<Tree *>);
-        bool isInteractive();
-        Rect getRect();
-        void run();
-        ~Tree();
+        virtual void draw(SDL_Renderer *renderer, Point parentP = zero) {};
+        virtual void addSeed(Tree *);
+        virtual std::vector<Tree *> *getSeeds();
+        virtual void setSeeds(std::vector<Tree *>);
+        virtual bool isInteractive();
+        virtual Rect getRect();
+        virtual void run();
 
     protected:
         bool ifInteractive = NONINTERACTIVE;
@@ -33,12 +33,12 @@ namespace Limb
     class Root : public Tree
     {
     public:
-        Root(LWindow* window);
+        Root(LWindow *window);
         void draw(Point parentP = zero);
         void updateInteractive();
-        std::vector<Tree *>* getInteractive();
+        std::vector<Tree *> *getInteractive();
 
-    private:
+    protected:
         SDL_Renderer *renderer;
         std::vector<Tree *> interactiveSeeds;
     };
@@ -46,10 +46,9 @@ namespace Limb
     class Label : public Tree
     {
     public:
-        Rect rect;
-        Color color;
+        Face face;
 
-        Label(Rect rect, Color background);
+        Label(Face f);
         Rect getRect();
         void draw(SDL_Renderer *renderer, Point parentP = zero);
     };
@@ -61,6 +60,7 @@ namespace Limb
         void (*func)();
         void run();
         Button(Rect range, void (*func)());
+        bool isInteractive();
         Rect getRect();
         void draw(SDL_Renderer *renderer, Point parentP = zero);
 
@@ -80,4 +80,6 @@ namespace Limb
         Rect getRect();
     };
     void generateInteractive(Tree *tree, std::vector<Tree *> *ret);
+    void genericDraw(Shape s, SDL_Renderer *r, Point parentP);
+    void specificDraw(Rectangle s, SDL_Renderer *r, Point parentP);
 };

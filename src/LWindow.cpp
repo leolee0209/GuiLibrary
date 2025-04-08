@@ -2,13 +2,18 @@
 #include <SDL2/SDL_image.h>
 #include <string>
 #include <LLog.hpp>
+#include <LEvent.hpp>
+#include <LGui.hpp>
+
 using namespace std;
 
-bool Limb::LWindow::create()
+void Limb::LWindow::run(Limb::Root *root)
 {
-    // Screen dimension constants
-    const int SCREEN_WIDTH = 640;
-    const int SCREEN_HEIGHT = 480;
+    this->r = new thread(Limb::LWindow::run2, root, this);
+}
+
+bool Limb::LWindow::create(int screenWidth, int screenHeight)
+{
 
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
     {
@@ -18,7 +23,7 @@ bool Limb::LWindow::create()
     // Create window
     window = SDL_CreateWindow("ImageViewer",
                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                              SCREEN_WIDTH, SCREEN_HEIGHT,
+                              screenWidth, screenHeight,
                               SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (!window)
     {
@@ -61,6 +66,12 @@ bool Limb::LWindow::create()
 
 bool Limb::LWindow::close()
 {
+    if (this->r)
+    {
+        if (this->r->joinable())
+            this->r->join();
+        delete this->r;
+    }
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     TTF_Quit();
@@ -82,4 +93,17 @@ void Limb::LWindow::present()
 SDL_Renderer *Limb::LWindow::getRenderer()
 {
     return renderer;
+}
+
+void Limb::LWindow::run2(Limb::Root *root, Limb::LWindow *w)
+{
+    bool quit = false;
+    while (!quit)
+    {
+        w->clear();
+        root->draw();
+        quit = Limb::interaction(root);
+        w->present();
+    }
+    w->close();
 }
